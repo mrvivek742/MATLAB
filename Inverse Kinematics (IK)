@@ -1,0 +1,82 @@
+clc;
+clear;
+close all;
+
+% =========================
+% ROBOT PARAMETERS
+% =========================
+
+l1 = 1;
+l2 = 0.8;
+
+% Base Position
+x0 = 0;
+y0 = 0;
+
+% Store End Effector Path
+pathX = [];
+pathY = [];
+
+% Create Figure
+figure;
+
+% =========================
+% ANIMATION LOOP
+% =========================
+
+for t = 0:0.05:10
+
+    % Joint Angles
+    theta1 = 45 * sin(t) * pi/180;
+    theta2 = 60 * cos(t) * pi/180;
+
+    % =========================
+    % FORWARD KINEMATICS
+    % =========================
+
+    % Joint 1 Position
+    x1 = l1 * cos(theta1);
+    y1 = l1 * sin(theta1);
+
+    % End Effector Position
+    x2 = x1 + l2 * cos(theta1 + theta2);
+    y2 = y1 + l2 * sin(theta1 + theta2);
+
+    % =========================
+    % STORE TRAJECTORY
+    % =========================
+
+    pathX(end+1) = x2;
+    pathY(end+1) = y2;
+
+    % =========================
+    % DRAW ROBOT
+    % =========================
+
+    clf;
+
+    % Draw End Effector Path
+    plot(pathX, pathY, '--', 'LineWidth', 2);
+    hold on;
+
+    % Draw Robot
+    plot([x0 x1 x2], [y0 y1 y2], '-o', ...
+        'LineWidth', 4, ...
+        'MarkerSize', 10);
+
+    grid on;
+    axis equal;
+
+    xlim([-2 2]);
+    ylim([-2 2]);
+
+    xlabel('X Position');
+    ylabel('Y Position');
+
+    title('2-Link Robot with End Effector Trajectory');
+
+    legend('End Effector Path', 'Robot');
+
+    drawnow;
+
+end
