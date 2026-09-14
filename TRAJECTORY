@@ -128,3 +128,4 @@ fprintf('Final End Effector Position:\n');
 
 fprintf('X = %.3f\n', x(end));
 fprintf('Y = %.3f\n', y(end));
+ HI
