@@ -1,0 +1,56 @@
+clc;
+clear;
+close all;
+
+% =====================================
+% 2-LINK ROBOT VISUALIZATION
+% =====================================
+
+% Link Lengths
+l1 = 1;
+l2 = 0.8;
+
+% Joint Angles
+theta1 = 45 * pi / 180;
+theta2 = 30 * pi / 180;
+
+% Base Position
+x0 = 0;
+y0 = 0;
+
+% Joint 1 Position
+x1 = l1 * cos(theta1);
+y1 = l1 * sin(theta1);
+
+% End Effector Position
+x2 = x1 + l2 * cos(theta1 + theta2);
+y2 = y1 + l2 * sin(theta1 + theta2);
+
+% =====================================
+% ROBOT VISUALIZATION
+% =====================================
+
+figure;
+
+plot([x0 x1 x2], [y0 y1 y2], ...
+    '-o', ...
+    'LineWidth', 5, ...
+    'MarkerSize', 12);
+
+grid on;
+axis equal;
+
+xlim([-2 2]);
+ylim([-2 2]);
+
+xlabel('X Position (m)');
+ylabel('Y Position (m)');
+
+title('2-Link Robot Visualization');
+
+legend('2-Link Robot');
+
+% Display coordinates
+text(x0, y0, ' Base');
+text(x1, y1, ' Joint 2');
+text(x2, y2, ' End Effector');
