@@ -1,0 +1,130 @@
+clc;
+clear;
+close all;
+
+% ==========================================
+% 2-LINK ROBOT TRAJECTORY GENERATION
+% ==========================================
+
+% Robot Link Lengths
+l1 = 1;
+l2 = 0.8;
+
+% Time Settings
+t = linspace(0, 10, 100);
+
+% ==========================================
+% JOINT ANGLE TRAJECTORY
+% ==========================================
+
+% Joint 1 Angle changes with time
+theta1 = 45 * pi/180 + ...
+         20 * pi/180 * sin(t);
+
+% Joint 2 Angle changes with time
+theta2 = 30 * pi/180 + ...
+         15 * pi/180 * cos(t);
+
+% ==========================================
+% STORE END EFFECTOR POSITIONS
+% ==========================================
+
+x = zeros(size(t));
+y = zeros(size(t));
+
+% ==========================================
+% FORWARD KINEMATICS FOR EACH TIME STEP
+% ==========================================
+
+for i = 1:length(t)
+
+    % End Effector X Position
+    x(i) = l1 * cos(theta1(i)) + ...
+           l2 * cos(theta1(i) + theta2(i));
+
+    % End Effector Y Position
+    y(i) = l1 * sin(theta1(i)) + ...
+           l2 * sin(theta1(i) + theta2(i));
+
+end
+
+% ==========================================
+% PLOT END EFFECTOR TRAJECTORY
+% ==========================================
+
+figure;
+
+plot(x, y, 'LineWidth', 3);
+
+grid on;
+axis equal;
+
+xlabel('X Position');
+ylabel('Y Position');
+
+title('2-Link Robot End Effector Trajectory');
+
+% ==========================================
+% ROBOT ANIMATION
+% ==========================================
+
+figure;
+
+for i = 1:length(t)
+
+    % Base Position
+    x0 = 0;
+    y0 = 0;
+
+    % Joint 1 Position
+    x1 = l1 * cos(theta1(i));
+    y1 = l1 * sin(theta1(i));
+
+    % End Effector Position
+    x2 = x1 + l2 * cos(theta1(i) + theta2(i));
+    y2 = y1 + l2 * sin(theta1(i) + theta2(i));
+
+    % Draw Robot
+    plot([x0 x1 x2], ...
+         [y0 y1 y2], ...
+         '-o', ...
+         'LineWidth', 4, ...
+         'MarkerSize', 10);
+
+    hold on;
+
+    % Draw Previous Trajectory
+    plot(x(1:i), y(1:i), ...
+         'LineWidth', 2);
+
+    grid on;
+    axis equal;
+
+    xlim([-2 2]);
+    ylim([-2 2]);
+
+    xlabel('X Position');
+    ylabel('Y Position');
+
+    title('2-Link Robot Trajectory Animation');
+
+    hold off;
+
+    drawnow;
+
+end
+
+% ==========================================
+% DISPLAY FINAL POSITION
+% ==========================================
+
+fprintf('====================================\n');
+fprintf('2-LINK ROBOT TRAJECTORY RESULTS\n');
+fprintf('====================================\n');
+
+fprintf('Final Time = %.2f seconds\n', t(end));
+
+fprintf('Final End Effector Position:\n');
+
+fprintf('X = %.3f\n', x(end));
+fprintf('Y = %.3f\n', y(end));
