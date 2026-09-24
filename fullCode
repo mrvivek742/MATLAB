@@ -1,0 +1,109 @@
+% Complete Simulation of a 2-Link Planar Robot Manipulator
+clear; clc; close all;
+
+%% 1. Robot Parameters
+l1 = 1.0; % Length of link 1 (m)
+l2 = 0.8; % Length of link 2 (m)
+m1 = 2.0; % Mass of link 1 (kg)
+m2 = 1.5; % Mass of link 2 (kg)
+g  = 9.81; % Acceleration due to gravity (m/s^2)
+
+%% 2. Trajectory Setup (Joint Space)
+t = linspace(0, 5, 100); % Time vector (5 seconds, 100 steps)
+
+% Joint positions over time
+q1 = pi/4 * sin(t); 
+q2 = pi/3 * (1 - cos(t));
+
+% Joint velocities (derivatives)
+dq1 = pi/4 * cos(t);
+dq2 = pi/3 * sin(t);
+
+% Joint accelerations (second derivatives)
+ddq1 = -pi/4 * sin(t);
+ddq2 =  pi/3 * cos(t);
+
+%% 3. Simulation & Arrays Initialization
+X_ee = zeros(1, length(t));
+Y_ee = zeros(1, length(t));
+
+tau1 = zeros(1, length(t));
+tau2 = zeros(1, length(t));
+
+figure('Color', 'w', 'Position', [100, 100, 1000, 500]);
+
+% Main Loop
+for i = 1:length(t)
+    % Current state
+    q  = [q1(i); q2(i)];
+    dq = [dq1(i); dq2(i)];
+    ddq = [ddq1(i); ddq2(i)];
+    
+    % --- Forward Kinematics ---
+    x1 = l1 * cos(q(1));
+    y1 = l1 * sin(q(1));
+    x2 = x1 + l2 * cos(q(1) + q(2));
+    y2 = y1 + l2 * sin(q(1) + q(2));
+    
+    X_ee(i) = x2;
+    Y_ee(i) = y2;
+    
+    % --- Jacobian Matrix ---
+    J = [-l1*sin(q(1)) - l2*sin(q(1)+q(2)),  -l2*sin(q(1)+q(2));
+          l1*cos(q(1)) + l2*cos(q(1)+q(2)),   l2*cos(q(1)+q(2))];
+      
+    v_ee = J * dq; % End-effector velocity [Vx; Vy]
+    
+    % --- Dynamic Equation Components (M, C, G) ---
+    % Inertia Matrix M(q)
+    M11 = m1*(l1/2)^2 + m2*(l1^2 + (l2/2)^2 + 2*l1*(l2/2)*cos(q(2)));
+    M12 = m2*((l2/2)^2 + l1*(l2/2)*cos(q(2)));
+    M21 = M12;
+    M22 = m2*(l2/2)^2;
+    M = [M11, M12; M21, M22];
+    
+    % Coriolis & Centrifugal Matrix C(q, dq)
+    h = m2 * l1 * (l2/2) * sin(q(2));
+    C = [-h*dq(2),  -h*(dq(1) + dq(2));
+          h*dq(1),   0];
+      
+    % Gravity Vector G(q)
+    G1 = (m1*(l1/2) + m2*l1)*g*cos(q(1)) + m2*(l2/2)*g*cos(q(1)+q(2));
+    G2 = m2*(l2/2)*g*cos(q(1)+q(2));
+    G = [G1; G2];
+    
+    % --- Torque Calculation (Tau = M*ddq + C*dq + G) ---
+    tau = M * ddq + C * dq + G;
+    tau1(i) = tau(1);
+    tau2(i) = tau(2);
+    
+    % --- Plotting Animation ---
+    subplot(1, 2, 1);
+    plot([0, x1, x2], [0, y1, y2], '-o', 'LineWidth', 3, 'MarkerSize', 8, ...
+         'MarkerFaceColor', 'r', 'Color', 'b');
+    hold on;
+    plot(X_ee(1:i), Y_ee(1:i), 'r--', 'LineWidth', 1.5); % Trajectory path
+    quiver(x2, y2, v_ee(1), v_ee(2), 0.3, 'g', 'LineWidth', 2); % Velocity vector
+    hold off;
+    
+    grid on;
+    axis equal;
+    axis([-(l1+l2)-0.2, (l1+l2)+0.2, -(l1+l2)-0.2, (l1+l2)+0.2]);
+    xlabel('X Position (m)');
+    ylabel('Y Position (m)');
+    title('2-Link Robot Animation & Trajectory');
+    legend('Robot Links', 'End-Effector Path', 'EE Velocity');
+    
+    % --- Plotting Joint Torques ---
+    subplot(1, 2, 2);
+    plot(t(1:i), tau1(1:i), 'b-', 'LineWidth', 1.5); hold on;
+    plot(t(1:i), tau2(1:i), 'r-', 'LineWidth', 1.5); hold off;
+    grid on;
+    xlim([0, 5]);
+    xlabel('Time (s)');
+    ylabel('Torque (Nm)');
+    title('Required Joint Torques');
+    legend('\tau_1 (Joint 1)', '\tau_2 (Joint 2)');
+    
+    drawnow;
+end
