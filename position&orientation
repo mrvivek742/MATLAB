@@ -1,0 +1,70 @@
+clc;
+clear;
+close all;
+
+% ROBOT PARAMETERS
+
+% Link lengths
+l1 = 1;
+l2 = 2.5;
+l3 = 2; 
+
+% Link joint angle
+t1 = 30;
+t2 = 45;
+t3 = -20;
+
+% Convert angles in to radians
+t4 = deg2rad(t1);
+t5 = deg2rad(t2);
+t6 = deg2rad(t3);
+
+%join 1 position
+x0=0;
+y0=0;
+
+%joint 2 position 
+x1 = l1*cos(t4);
+y1 = l1*sin(t4);
+
+% joint 3 position
+x2 = x1+l2*cos(t4+t5);
+y2 = y1 + l2*sin(t4 + t5);
+
+% end-Effector position
+x3 = x2 + l3*cos(t4 + t5 + t6);
+y3 = y2 + l3*sin(t4 + t5 + t6);
+
+% Plot the robot configuration
+plot([x0 x1 x2 x3], [y0 y1 y2 y3], '-o', 'LineWidth', 2);
+axis equal;
+grid on;
+xlabel('X position');
+ylabel('Y position');
+title('3-Link Planar Robot');
+
+
+t01 = [ cosd(t1) -sind(t1) 0 l1*cosd(t1);
+        sind(t1) cosd(t1) 0 l1*sind(t1);
+        0 0 1 0;
+        0 0 0 1];
+
+t12 = [ cosd(t2) -sind(t2) 0 l2*cosd(t2);
+    sind(t2) cosd(t2) 0 l2*sind(t2);
+    0 0 1 0;
+    0 0 0 1]; 
+
+t23 = [ cosd(t3) -sind(t3) 0 l3*cosd(t3);
+    sind(t3) cosd(t3) 0 l3*sind(t3);
+    0 0 1 0;
+    0 0 0 1];
+
+T23=t01*t12;
+T03 = T23 * t23;
+endEffectorPosition = T03(1:2, 4);
+
+disp('Final Transformation Matrix:');
+disp(T03);
+
+disp('End Effector Position:');
+disp(endEffectorPosition);
